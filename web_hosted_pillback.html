@@ -1,0 +1,1775 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="PillBack™">
+    <title>PillBack™ Medication Management System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            background: linear-gradient(135deg, #a8d5ba 0%, #b8dae3 100%);
+            min-height: 100vh;
+            padding: 8px;
+            color: #2c3e50;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        .container {
+            max-width: 420px;
+            width: 100%;
+            margin: 0 auto;
+            background: #fafbfc;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(44, 62, 80, 0.15);
+            overflow: hidden;
+            max-height: calc(100vh - 16px);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #6b9080 0%, #7ba098 100%);
+            color: white;
+            padding: 16px;
+            text-align: center;
+        }
+
+        .header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            font-size: 0.7rem;
+        }
+
+        .status-badge {
+            background: rgba(255,255,255,0.25);
+            padding: 4px 8px;
+            border-radius: 8px;
+            font-weight: 600;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .patient-info h1 {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .patient-info p {
+            font-size: 0.85rem;
+            opacity: 0.9;
+        }
+
+        .content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .tab-navigation {
+            display: flex;
+            margin-bottom: 16px;
+            border-bottom: 2px solid #e8f5e8;
+            background: #f8f9fa;
+            border-radius: 8px 8px 0 0;
+            overflow: hidden;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 12px 8px;
+            background: none;
+            border: none;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #666;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s ease;
+            text-align: center;
+            -webkit-touch-callout: none;
+        }
+
+        .tab-btn.active {
+            color: #1b5e20;
+            background: #ffffff;
+            border-bottom-color: #66bb6a;
+        }
+
+        .tab-btn:active {
+            background: #e8f5e8;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .section {
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #1b5e20;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .current-status {
+            background: linear-gradient(135deg, #a8d5ba 0%, #c8e6c9 100%);
+            padding: 14px;
+            border-radius: 12px;
+            text-align: center;
+            margin-bottom: 16px;
+            border: 1px solid #81c784;
+        }
+
+        .status-primary {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #1b5e20;
+            margin-bottom: 4px;
+        }
+
+        .status-secondary {
+            font-size: 0.8rem;
+            color: #2e7d32;
+        }
+
+        .acknowledgment-section {
+            background: #fff3cd;
+            border: 2px solid #f0ad4e;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+            display: none;
+            position: sticky;
+            top: 70px;
+            z-index: 90;
+            box-shadow: 0 4px 16px rgba(240, 173, 78, 0.3);
+        }
+
+        .ack-header {
+            background: #f0ad4e;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            margin-bottom: 12px;
+            font-weight: 600;
+            text-align: center;
+            animation: attention 2s infinite;
+        }
+
+        @keyframes attention {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+
+        .ack-medication-info {
+            font-size: 1rem;
+            color: #856404;
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 12px;
+        }
+
+        .ack-buttons {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .custom-time-section {
+            background: #f1f8f4;
+            padding: 12px;
+            border-radius: 6px;
+            border: 1px solid #c8e6c9;
+            display: none;
+        }
+
+        .bay-container {
+            background: #f1f8f4;
+            border-radius: 12px;
+            padding: 16px;
+            border: 1px solid #c8e6c9;
+        }
+
+        .bay-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .bay {
+            background: #ffffff;
+            border: 2px solid #e8f5e8;
+            border-radius: 10px;
+            padding: 12px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            min-height: 70px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            position: relative;
+            -webkit-touch-callout: none;
+        }
+
+        .bay.loaded {
+            border-color: #66bb6a;
+            background: #f1f8f4;
+            box-shadow: 0 2px 8px rgba(102, 187, 106, 0.2);
+        }
+
+        .bay.active {
+            border-color: #d32f2f;
+            background: #fff5f5;
+            animation: pulse 2s infinite;
+            transform: scale(1.02);
+            box-shadow: 0 4px 16px rgba(211, 47, 47, 0.3);
+        }
+
+        .bay.taken {
+            border-color: #2196f3;
+            background: #e3f2fd;
+            opacity: 0.7;
+        }
+
+        .bay.taken::before {
+            content: '✓';
+            position: absolute;
+            top: 2px;
+            right: 4px;
+            color: #2196f3;
+            font-weight: bold;
+            font-size: 0.8rem;
+        }
+
+        @keyframes pulse {
+            0%, 100% { 
+                box-shadow: 0 0 0 0 rgba(211, 47, 47, 0.4);
+            }
+            50% { 
+                box-shadow: 0 0 0 8px rgba(211, 47, 47, 0);
+            }
+        }
+
+        .bay-number {
+            font-weight: 700;
+            font-size: 0.9rem;
+            color: #2e7d32;
+            margin-bottom: 4px;
+        }
+
+        .bay-content {
+            font-size: 0.7rem;
+            color: #4a4a4a;
+            line-height: 1.2;
+        }
+
+        .bay-time {
+            font-size: 0.65rem;
+            font-weight: 600;
+            color: #4682b4;
+            margin-top: 2px;
+        }
+
+        .controls {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            -webkit-touch-callout: none;
+            touch-action: manipulation;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-primary {
+            background: #5f9ea0;
+            color: white;
+            border: 1px solid #4682b4;
+        }
+
+        .btn-primary:hover, .btn-primary:active {
+            background: #4682b4;
+            box-shadow: 0 4px 12px rgba(70, 130, 180, 0.3);
+        }
+
+        .btn-success {
+            background: #66bb6a;
+            color: white;
+            border: 1px solid #4caf50;
+        }
+
+        .btn-success:hover, .btn-success:active {
+            background: #4caf50;
+            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+        }
+
+        .btn-warning {
+            background: #ff9800;
+            color: white;
+            border: 1px solid #f57c00;
+        }
+
+        .btn-warning:hover, .btn-warning:active {
+            background: #f57c00;
+            box-shadow: 0 4px 12px rgba(245, 124, 0, 0.3);
+        }
+
+        .schedule-panel {
+            background: #ffffff;
+            border-radius: 10px;
+            border: 1px solid #e0e0e0;
+            max-height: 200px;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .schedule-item {
+            padding: 10px 12px;
+            border-bottom: 1px solid #f5f5f5;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .schedule-item:last-child {
+            border-bottom: none;
+        }
+
+        .schedule-time {
+            font-weight: 600;
+            color: #1b5e20;
+            font-size: 0.9rem;
+        }
+
+        .schedule-med {
+            font-size: 0.75rem;
+            color: #616161;
+        }
+
+        .schedule-bay {
+            background: #5f9ea0;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        .upload-section {
+            background: #f1f8f4;
+            border-radius: 12px;
+            padding: 16px;
+            border: 1px solid #c8e6c9;
+            margin-bottom: 16px;
+        }
+
+        .upload-section h3 {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #1b5e20;
+            margin-bottom: 8px;
+        }
+
+        .upload-section p {
+            font-size: 0.75rem;
+            color: #2e7d32;
+            margin-bottom: 12px;
+        }
+
+        .error-display {
+            background: #ffebee;
+            color: #c62828;
+            padding: 12px;
+            border-radius: 8px;
+            border-left: 3px solid #f44336;
+            margin-bottom: 12px;
+            font-size: 0.85rem;
+            display: none;
+        }
+
+        .success-display {
+            background: #e8f5e8;
+            color: #2e7d32;
+            padding: 12px;
+            border-radius: 8px;
+            border-left: 3px solid #4caf50;
+            margin-bottom: 12px;
+            font-size: 0.85rem;
+            display: none;
+        }
+
+        .metric-card {
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+            border-left: 4px solid #66bb6a;
+            margin-bottom: 12px;
+        }
+
+        .metric-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1b5e20;
+            margin-bottom: 4px;
+        }
+
+        .metric-label {
+            font-size: 0.7rem;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        input, select, textarea {
+            -webkit-appearance: none;
+            appearance: none;
+            border-radius: 6px;
+            font-size: 16px; /* Prevents zoom on iOS */
+        }
+
+        input[type="time"] {
+            -webkit-appearance: none;
+            appearance: none;
+            background: white;
+            border: 2px solid #c8e6c9;
+            border-radius: 6px;
+            padding: 8px 12px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #1b5e20;
+            width: 100%;
+        }
+
+        input[type="datetime-local"] {
+            -webkit-appearance: none;
+            appearance: none;
+            background: white;
+            border: 1px solid #c8e6c9;
+            border-radius: 4px;
+            padding: 6px;
+            width: 100%;
+            font-size: 14px;
+        }
+
+        /* iOS-specific fixes */
+        @supports (-webkit-touch-callout: none) {
+            .container {
+                max-height: calc(100vh - env(safe-area-inset-bottom) - 16px);
+            }
+            
+            body {
+                padding-bottom: env(safe-area-inset-bottom);
+            }
+        }
+
+        /* Connection status indicator */
+        .connection-status {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: #4caf50;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            z-index: 1000;
+            opacity: 0.8;
+        }
+
+        .connection-status.offline {
+            background: #f44336;
+        }
+    </style>
+</head>
+<body>
+    <div class="connection-status" id="connection-status">● Online</div>
+    
+    <div class="container">
+        <div class="header">
+            <div class="header-row">
+                <div class="status-badge" id="current-time">--:--</div>
+                <div class="status-badge">● Web Version</div>
+            </div>
+            <div class="patient-info">
+                <h1 id="patient-name-display">Ian Fraser Carwardine</h1>
+                <p id="pharmacy-display">McNeil Pharmacy • Stalevo Key Framework Schedule</p>
+            </div>
+        </div>
+
+        <div class="content">
+            <!-- Global Acknowledgment Section -->
+            <div class="acknowledgment-section" id="acknowledgment-section">
+                <div class="ack-header">🔔 MEDICATION DUE NOW</div>
+                <div class="ack-medication-info" id="ack-medication-info">
+                    Bay 1 • Stalevo 200/50/37mg
+                </div>
+                
+                <div class="ack-buttons">
+                    <button class="btn btn-success" onclick="acknowledgeMedication('taken')" style="flex: 2;">
+                        ✅ Taken Now
+                    </button>
+                    <button class="btn btn-primary" onclick="acknowledgeMedication('custom')" style="flex: 1;">
+                        🕐 Custom Time
+                    </button>
+                </div>
+                
+                <div class="custom-time-section" id="custom-time-section">
+                    <div style="margin-bottom: 8px;">
+                        <label style="font-size: 0.8rem; font-weight: 600; color: #1b5e20;">Actual Time Taken:</label>
+                        <input type="datetime-local" id="custom-time-input" style="margin-top: 4px;">
+                    </div>
+                    <button class="btn btn-success" onclick="confirmCustomTime()" style="width: 100%;">
+                        Confirm Time
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tab Navigation -->
+            <div class="tab-navigation">
+                <button class="tab-btn active" onclick="switchTab('setup')">⚙️ Setup</button>
+                <button class="tab-btn" onclick="switchTab('monitor')">📊 Monitor</button>
+                <button class="tab-btn" onclick="switchTab('testing')">🧪 Testing</button>
+                <button class="tab-btn" onclick="switchTab('export')">📤 Export</button>
+            </div>
+
+            <div id="error-display" class="error-display"></div>
+            <div id="success-display" class="success-display"></div>
+
+            <!-- Setup Tab -->
+            <div id="setup-tab" class="tab-content active">
+                <div class="section">
+                    <div class="current-status">
+                        <div class="status-primary" id="current-medication">System initialized successfully</div>
+                        <div class="status-secondary" id="next-dose">Monitoring for medication alerts</div>
+                        <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(27, 94, 32, 0.2);">
+                            <div style="font-size: 0.75rem; color: #2e7d32; margin-bottom: 4px;">Current Date & Time</div>
+                            <div id="current-datetime" style="font-size: 0.85rem; font-weight: 600; color: #1b5e20;">
+                                Loading...
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <div class="section-title">⏰ Schedule Configuration</div>
+                    <div class="upload-section">
+                        <h3>Daily Start Time Control</h3>
+                        <p>Set the start time for your first medication dose. All other doses will adjust automatically.</p>
+                        
+                        <div style="margin-bottom: 12px;">
+                            <label for="start-time-input" style="font-weight: 600; color: #1b5e20; font-size: 0.9rem; display: block; margin-bottom: 4px;">Start Time:</label>
+                            <input type="time" id="start-time-input" value="08:00">
+                        </div>
+                        
+                        <div style="background: rgba(107, 144, 128, 0.1); padding: 10px; border-radius: 6px; border-left: 3px solid #6b9080;">
+                            <div style="font-size: 0.8rem; color: #2e7d32; margin-bottom: 4px;">
+                                <strong>Stalevo Key Framework:</strong>
+                            </div>
+                            <div id="schedule-window" style="font-size: 0.85rem; font-weight: 600; color: #1b5e20;">
+                                08:00 - 22:00 (6 doses, 2.8 hour intervals)
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <div class="section-title">📅 Today's Schedule</div>
+                    <div class="schedule-panel" id="schedule-panel">
+                        <!-- Schedule will be populated here -->
+                    </div>
+                </div>
+
+                <div class="section">
+                    <div class="section-title">🔔 Notification Settings</div>
+                    <div class="upload-section">
+                        <div style="margin-bottom: 12px;">
+                            <label style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem;">
+                                <input type="checkbox" id="sound-alerts" checked>
+                                <span>Sound alerts for medication times</span>
+                            </label>
+                        </div>
+                        <div style="margin-bottom: 12px;">
+                            <label style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem;">
+                                <input type="checkbox" id="advance-warnings" checked>
+                                <span>5-minute advance warnings</span>
+                            </label>
+                        </div>
+                        <div style="margin-bottom: 12px;">
+                            <label style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem;">
+                                <input type="checkbox" id="missed-alerts">
+                                <span>Missed dose reminders (15min delay)</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Monitor Tab -->
+            <div id="monitor-tab" class="tab-content">
+                <div class="section">
+                    <div class="section-title">🗺️ Bay Status Map</div>
+                    <div class="bay-container">
+                        <div class="bay-grid">
+                            <div class="bay loaded" id="bay-1">
+                                <div class="bay-number">Bay 1</div>
+                                <div class="bay-content" id="content-1">Stalevo</div>
+                                <div class="bay-time" id="time-1">08:00</div>
+                            </div>
+                            <div class="bay loaded" id="bay-2">
+                                <div class="bay-number">Bay 2</div>
+                                <div class="bay-content" id="content-2">Stalevo</div>
+                                <div class="bay-time" id="time-2">10:48</div>
+                            </div>
+                            <div class="bay loaded" id="bay-3">
+                                <div class="bay-number">Bay 3</div>
+                                <div class="bay-content" id="content-3">Stalevo</div>
+                                <div class="bay-time" id="time-3">13:36</div>
+                            </div>
+                            <div class="bay loaded" id="bay-4">
+                                <div class="bay-number">Bay 4</div>
+                                <div class="bay-content" id="content-4">Stalevo</div>
+                                <div class="bay-time" id="time-4">16:24</div>
+                            </div>
+                            <div class="bay loaded" id="bay-5">
+                                <div class="bay-number">Bay 5</div>
+                                <div class="bay-content" id="content-5">Stalevo</div>
+                                <div class="bay-time" id="time-5">19:12</div>
+                            </div>
+                            <div class="bay loaded" id="bay-6">
+                                <div class="bay-number">Bay 6</div>
+                                <div class="bay-content" id="content-6">Stalevo</div>
+                                <div class="bay-time" id="time-6">22:00</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <div class="section-title">📊 Adherence Metrics</div>
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">
+                        <div class="metric-card">
+                            <div class="metric-value" id="adherence-rate">0%</div>
+                            <div class="metric-label">7-Day Adherence</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value" id="avg-delay">0.0</div>
+                            <div class="metric-label">Avg Delay (min)</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value" id="streak-count">0</div>
+                            <div class="metric-label">Current Streak</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value" id="total-doses">0</div>
+                            <div class="metric-label">Total Doses</div>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top: 12px;">
+                        <button class="btn btn-warning" onclick="resetAdherenceMetrics()" style="width: 100%;">
+                            🔄 Reset Adherence Metrics
+                        </button>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <div class="section-title">📋 Medication Log</div>
+                    <div id="medication-log" style="background: #ffffff; border-radius: 10px; border: 1px solid #e0e0e0; padding: 16px; min-height: 100px;">
+                        <div style="text-align: center; color: #666; font-style: italic;">
+                            No medications logged yet. Use Testing tab to simulate or wait for real medication times.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Testing Tab -->
+            <div id="testing-tab" class="tab-content">
+                <div class="section">
+                    <div class="section-title">🧪 System Testing</div>
+                    <div class="upload-section">
+                        <h3>Test Medication Alerts</h3>
+                        <p>Use these buttons to test the medication acknowledgment system and verify all functions work correctly.</p>
+                        
+                        <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+                            <button class="btn btn-primary" onclick="simulateAlert()" style="flex: 1;">
+                                ⏰ Simulate Alert
+                            </button>
+                            <button class="btn btn-warning" onclick="clearAllBays()" style="flex: 1;">
+                                🧹 Clear Alerts
+                            </button>
+                        </div>
+                        
+                        <div style="margin-bottom: 12px;">
+                            <button class="btn btn-warning" onclick="resetAdherenceMetrics()" style="width: 100%; margin-bottom: 8px;">
+                                🔄 Reset All Metrics & Logs
+                            </button>
+                        </div>
+                        
+                        <div style="background: rgba(107, 144, 128, 0.1); padding: 10px; border-radius: 6px; border-left: 3px solid #6b9080;">
+                            <div style="font-size: 0.8rem; color: #2e7d32;">
+                                <strong>Testing Steps:</strong><br>
+                                1. Click "Simulate Alert" to activate a bay<br>
+                                2. Yellow acknowledgment section will appear<br>
+                                3. Test both "Taken Now" and "Custom Time" buttons<br>
+                                4. Check Monitor tab for updated metrics<br>
+                                5. Use "Clear Alerts" to reset for next test<br>
+                                6. Use "Reset All Metrics" to start with clean data
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <div class="section-title">📱 iPhone Compatibility</div>
+                    <div class="upload-section">
+                        <h3>Web Version Features</h3>
+                        <div style="background: #e8f5e8; padding: 12px; border-radius: 6px; border-left: 3px solid #4caf50;">
+                            <div style="font-size: 0.8rem; color: #2e7d32; margin-bottom: 8px;">
+                                <strong>✅ Fully Compatible:</strong>
+                            </div>
+                            <div style="font-size: 0.8rem; color: #2e7d32;">
+                                • Real-time clock updates<br>
+                                • Touch-optimized interface<br>
+                                • Automatic medication alerts<br>
+                                • Persistent data storage<br>
+                                • Offline capability detection<br>
+                                • iOS Safari optimization
+                            </div>
+                        </div>
+                        
+                        <button class="btn btn-primary" onclick="addToHomeScreen()" style="width: 100%; margin-top: 12px;">
+                            📱 Add to Home Screen
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Export Tab -->
+            <div id="export-tab" class="tab-content">
+                <div class="section">
+                    <div class="section-title">📤 Data Export & Backup</div>
+                    <div class="upload-section">
+                        <h3>Healthcare Provider Reports</h3>
+                        <p>Generate comprehensive medication adherence reports for medical appointments.</p>
+                        
+                        <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+                            <button class="btn btn-success" onclick="exportMedicationData('medical')" style="flex: 1;">
+                                📋 Medical Report
+                            </button>
+                            <button class="btn btn-primary" onclick="exportMedicationData('detailed')" style="flex: 1;">
+                                📊 Detailed Log
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <div class="section-title">💾 System Backup</div>
+                    <div class="upload-section">
+                        <h3>Complete System Backup</h3>
+                        <p>Export all settings, schedules, and medication history.</p>
+                        
+                        <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+                            <button class="btn btn-primary" onclick="exportSystemBackup()" style="flex: 1;">
+                                💾 Full Backup
+                            </button>
+                            <button class="btn btn-warning" onclick="clearStoredData()" style="flex: 1;">
+                                🗑️ Clear Data
+                            </button>
+                        </div>
+                        
+                        <div style="background: #e7f3ff; padding: 10px; border-radius: 6px; border-left: 3px solid #4682b4;">
+                            <div style="font-size: 0.8rem; color: #2e7d32;">
+                                <strong>Current Data Summary:</strong><br>
+                                <span id="data-summary">Loading data statistics...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global system state with web optimization
+        let systemState = {
+            currentStartTime: '08:00',
+            currentEndTime: '22:00',
+            medicationLog: JSON.parse(localStorage.getItem('pillback_medication_log') || '[]'),
+            systemSettings: JSON.parse(localStorage.getItem('pillback_settings') || '{"soundAlerts":true,"advanceWarnings":true,"missedAlerts":false}'),
+            isInitialized: false,
+            currentDueMedication: null,
+            currentTab: 'setup',
+            testingMode: false,
+            isOnline: navigator.onLine
+        };
+
+        // Web-optimized data persistence
+        function saveToStorage(key, data) {
+            try {
+                localStorage.setItem(`pillback_${key}`, JSON.stringify(data));
+                console.log(`Saved ${key} to localStorage`);
+            } catch (error) {
+                console.error('Storage error:', error);
+                showMessage('Data storage limited - some features may not persist', 'error');
+            }
+        }
+
+        function loadFromStorage(key, defaultValue = null) {
+            try {
+                const stored = localStorage.getItem(`pillback_${key}`);
+                return stored ? JSON.parse(stored) : defaultValue;
+            } catch (error) {
+                console.error('Storage load error:', error);
+                return defaultValue;
+            }
+        }
+
+        // Connection monitoring
+        function updateConnectionStatus() {
+            const statusElement = document.getElementById('connection-status');
+            if (navigator.onLine) {
+                statusElement.textContent = '● Online';
+                statusElement.className = 'connection-status';
+                systemState.isOnline = true;
+            } else {
+                statusElement.textContent = '● Offline';
+                statusElement.className = 'connection-status offline';
+                systemState.isOnline = false;
+            }
+        }
+
+        // iPhone home screen prompt
+        function addToHomeScreen() {
+            if (/iPad|iPhone|iPod/.test(navigator.userAgent)) {
+                showMessage('Tap the Share button in Safari, then "Add to Home Screen" for the best experience', 'success');
+            } else {
+                showMessage('Use your browser\'s "Add to Home Screen" or "Install App" option', 'success');
+            }
+        }
+
+        // Tab switching with web optimization
+        function switchTab(tabName) {
+            try {
+                // Update tab buttons
+                document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+                document.querySelector(`[onclick*="${tabName}"]`).classList.add('active');
+                
+                // Update tab content
+                document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+                document.getElementById(`${tabName}-tab`).classList.add('active');
+                
+                systemState.currentTab = tabName;
+                
+                // Update displays when switching tabs
+                if (tabName === 'monitor') {
+                    updateMedicationLogDisplay();
+                } else if (tabName === 'export') {
+                    updateDataSummary();
+                }
+                
+            } catch (error) {
+                console.error('Error switching tabs:', error);
+                showMessage('Failed to switch tabs', 'error');
+            }
+        }
+
+        // Safe DOM element access
+        function safeGetElement(id) {
+            try {
+                const element = document.getElementById(id);
+                if (!element) {
+                    console.warn(`Element with ID '${id}' not found`);
+                    return null;
+                }
+                return element;
+            } catch (error) {
+                console.error(`Error accessing element ${id}:`, error);
+                return null;
+            }
+        }
+
+        function safeUpdateText(elementId, text) {
+            const element = safeGetElement(elementId);
+            if (element) {
+                element.textContent = text;
+                return true;
+            }
+            return false;
+        }
+
+        // Message display system
+        function showMessage(message, type = 'success') {
+            const displayId = type === 'error' ? 'error-display' : 'success-display';
+            const element = safeGetElement(displayId);
+            if (element) {
+                element.textContent = message;
+                element.style.display = 'block';
+                
+                setTimeout(() => {
+                    element.style.display = 'none';
+                }, 5000);
+            }
+        }
+
+        // Acknowledgment system
+        function showAcknowledgmentSection(medication) {
+            try {
+                const section = safeGetElement('acknowledgment-section');
+                const medInfo = safeGetElement('ack-medication-info');
+                
+                if (section && medInfo) {
+                    medInfo.textContent = `Bay ${medication.bay} • ${medication.medication} ${medication.dose}`;
+                    section.style.display = 'block';
+                    systemState.currentDueMedication = medication;
+                }
+            } catch (error) {
+                console.error('Error showing acknowledgment section:', error);
+            }
+        }
+
+        function hideAcknowledgmentSection() {
+            try {
+                const section = safeGetElement('acknowledgment-section');
+                const customSection = safeGetElement('custom-time-section');
+                
+                if (section) {
+                    section.style.display = 'none';
+                }
+                if (customSection) {
+                    customSection.style.display = 'none';
+                }
+                
+                systemState.currentDueMedication = null;
+            } catch (error) {
+                console.error('Error hiding acknowledgment section:', error);
+            }
+        }
+
+        function acknowledgeMedication(type) {
+            try {
+                if (!systemState.currentDueMedication) {
+                    showMessage('No medication currently due for acknowledgment', 'error');
+                    return;
+                }
+                
+                if (type === 'taken') {
+                    const now = new Date();
+                    recordMedicationTaken(systemState.currentDueMedication, now, systemState.currentDueMedication.time);
+                    hideAcknowledgmentSection();
+                    clearActiveBays();
+                    showTakenConfirmation();
+                } else if (type === 'custom') {
+                    const customSection = safeGetElement('custom-time-section');
+                    if (customSection) {
+                        customSection.style.display = 'block';
+                        
+                        // Set default to current time
+                        const now = new Date();
+                        const localDateTime = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+                        const customInput = safeGetElement('custom-time-input');
+                        if (customInput) {
+                            customInput.value = localDateTime;
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Error acknowledging medication:', error);
+                showMessage('Failed to acknowledge medication', 'error');
+            }
+        }
+
+        function confirmCustomTime() {
+            try {
+                if (!systemState.currentDueMedication) {
+                    showMessage('No medication to confirm', 'error');
+                    return;
+                }
+                
+                const customInput = safeGetElement('custom-time-input');
+                if (!customInput || !customInput.value) {
+                    showMessage('Please select a time', 'error');
+                    return;
+                }
+                
+                const takenTime = new Date(customInput.value);
+                recordMedicationTaken(systemState.currentDueMedication, takenTime, systemState.currentDueMedication.time);
+                hideAcknowledgmentSection();
+                clearActiveBays();
+                showTakenConfirmation();
+            } catch (error) {
+                console.error('Error confirming custom time:', error);
+                showMessage('Failed to confirm medication time', 'error');
+            }
+        }
+
+        function recordMedicationTaken(medication, takenTime, scheduledTime) {
+            try {
+                const logEntry = {
+                    id: Date.now() + Math.random(),
+                    scheduledTime: scheduledTime,
+                    actualTime: takenTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }),
+                    actualDateTime: takenTime.toLocaleString('en-US', { 
+                        weekday: 'short', 
+                        month: 'short', 
+                        day: 'numeric', 
+                        hour: '2-digit', 
+                        minute: '2-digit',
+                        hour12: false
+                    }),
+                    medication: medication.medication,
+                    dose: medication.dose,
+                    bay: medication.bay,
+                    date: takenTime.toDateString(),
+                    timeDifference: calculateTimeDifferenceInMinutes(scheduledTime, takenTime.toTimeString().slice(0, 5))
+                };
+                
+                systemState.medicationLog.push(logEntry);
+                saveToStorage('medication_log', systemState.medicationLog);
+                
+                console.log('Medication logged:', logEntry);
+                updateMedicationLogDisplay();
+                updateAdherenceMetrics();
+                
+                return logEntry;
+            } catch (error) {
+                console.error('Error recording medication:', error);
+                showMessage('Failed to record medication', 'error');
+                return null;
+            }
+        }
+
+        function calculateTimeDifferenceInMinutes(scheduledTime, actualTime) {
+            try {
+                const [schedHour, schedMin] = scheduledTime.split(':').map(Number);
+                const [actualHour, actualMin] = actualTime.split(':').map(Number);
+                
+                const schedMinutes = schedHour * 60 + schedMin;
+                const actualMinutes = actualHour * 60 + actualMin;
+                
+                return actualMinutes - schedMinutes;
+            } catch (error) {
+                console.error('Error calculating time difference in minutes:', error);
+                return 0;
+            }
+        }
+
+        // Bay management
+        function clearActiveBays() {
+            try {
+                for (let i = 1; i <= 6; i++) {
+                    const bay = safeGetElement(`bay-${i}`);
+                    if (bay) {
+                        bay.classList.remove('active');
+                        bay.classList.add('taken');
+                    }
+                }
+                systemState.currentDueMedication = null;
+            } catch (error) {
+                console.error('Error clearing active bays:', error);
+            }
+        }
+
+        function clearAllBays() {
+            try {
+                for (let i = 1; i <= 6; i++) {
+                    const bay = safeGetElement(`bay-${i}`);
+                    if (bay) {
+                        bay.classList.remove('active', 'taken');
+                        bay.classList.add('loaded');
+                    }
+                }
+                
+                hideAcknowledgmentSection();
+                systemState.testingMode = false;
+                
+                safeUpdateText('current-medication', 'All alerts cleared');
+                safeUpdateText('next-dose', 'System ready for testing');
+                
+                showMessage('All medication alerts cleared - Testing mode reset');
+                
+                setTimeout(() => {
+                    updateClock();
+                }, 2000);
+                
+            } catch (error) {
+                console.error('Error clearing all bays:', error);
+                showMessage('Failed to clear alerts', 'error');
+            }
+        }
+
+        function showTakenConfirmation() {
+            try {
+                safeUpdateText('current-medication', '✅ CONFIRMED: Medication taken and logged');
+                safeUpdateText('next-dose', 'Thank you for confirming your dose - Use Clear Alerts to test again');
+                
+                showMessage('Medication successfully logged - Testing window remains open');
+                
+                if (!systemState.testingMode) {
+                    setTimeout(() => {
+                        updateClock();
+                    }, 3000);
+                }
+            } catch (error) {
+                console.error('Error showing taken confirmation:', error);
+            }
+        }
+
+        // Schedule generation
+        function generateMedicationSchedule(startTime) {
+            const [startHour, startMinute] = startTime.split(':').map(Number);
+            const startTotalMinutes = startHour * 60 + startMinute;
+            const intervalMinutes = 168; // 2.8 hours between doses
+            
+            const schedule = [];
+            for (let i = 0; i < 6; i++) {
+                const doseTotalMinutes = (startTotalMinutes + (i * intervalMinutes)) % (24 * 60);
+                const doseHour = Math.floor(doseTotalMinutes / 60);
+                const doseMinute = doseTotalMinutes % 60;
+                const doseTime = `${doseHour.toString().padStart(2, '0')}:${doseMinute.toString().padStart(2, '0')}`;
+                
+                schedule.push({
+                    time: doseTime,
+                    medication: 'Stalevo',
+                    dose: '200/50/37mg',
+                    bay: i + 1,
+                    category: 'Parkinson\'s'
+                });
+            }
+            
+            return schedule;
+        }
+
+        // Time calculations
+        function calculateTimeDifference(currentTime, targetTime) {
+            try {
+                const [currentHour, currentMin] = currentTime.split(':').map(Number);
+                const [targetHour, targetMin] = targetTime.split(':').map(Number);
+                
+                const currentMinutes = currentHour * 60 + currentMin;
+                const targetMinutes = targetHour * 60 + targetMin;
+                
+                let difference = targetMinutes - currentMinutes;
+                
+                if (difference > 12 * 60) {
+                    difference -= 24 * 60;
+                } else if (difference < -12 * 60) {
+                    difference += 24 * 60;
+                }
+                
+                return difference;
+            } catch (error) {
+                console.error('Error calculating time difference:', error);
+                return 0;
+            }
+        }
+
+        // Clock and alert system
+        function updateClock() {
+            try {
+                const now = new Date();
+                const timeString = now.toLocaleTimeString('en-US', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: false
+                });
+                
+                const dateString = now.toLocaleDateString('en-US', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+                
+                safeUpdateText('current-time', timeString);
+                safeUpdateText('current-datetime', `${dateString} at ${timeString}`);
+                
+                checkMedicationAlerts(timeString);
+                
+            } catch (error) {
+                console.error('Error updating clock:', error);
+                showMessage('Clock update error occurred', 'error');
+            }
+        }
+
+        function checkMedicationAlerts(currentTime) {
+            try {
+                if (systemState.testingMode) {
+                    return;
+                }
+                
+                const schedule = generateMedicationSchedule(systemState.currentStartTime);
+                
+                for (let i = 1; i <= 6; i++) {
+                    const bay = safeGetElement(`bay-${i}`);
+                    if (bay) {
+                        bay.classList.remove('active');
+                    }
+                }
+                
+                const currentMed = schedule.find(med => {
+                    const timeDiff = calculateTimeDifference(currentTime, med.time);
+                    return timeDiff >= -2 && timeDiff <= 5;
+                });
+                
+                if (currentMed) {
+                    const bay = safeGetElement(`bay-${currentMed.bay}`);
+                    if (bay) {
+                        bay.classList.add('active');
+                    }
+                    
+                    safeUpdateText('current-medication', `MEDICATION DUE: ${currentMed.medication} ${currentMed.dose}`);
+                    safeUpdateText('next-dose', `Bay ${currentMed.bay} • Take medication now`);
+                    
+                    showAcknowledgmentSection(currentMed);
+                } else {
+                    if (!systemState.testingMode) {
+                        hideAcknowledgmentSection();
+                    }
+                    
+                    const nextMed = schedule.find(med => {
+                        const timeDiff = calculateTimeDifference(currentTime, med.time);
+                        return timeDiff > 5;
+                    });
+                    
+                    if (nextMed && !systemState.testingMode) {
+                        safeUpdateText('current-medication', 'No medication currently due');
+                        safeUpdateText('next-dose', `Next: ${nextMed.time} - ${nextMed.medication} (Bay ${nextMed.bay})`);
+                    } else if (!systemState.testingMode) {
+                        safeUpdateText('current-medication', 'No medication currently due');
+                        safeUpdateText('next-dose', 'All doses complete for today');
+                    }
+                }
+                
+            } catch (error) {
+                console.error('Error checking medication alerts:', error);
+                showMessage('Medication alert check failed', 'error');
+            }
+        }
+
+        // Schedule updates
+        function updateStartTime() {
+            try {
+                const startTimeInput = safeGetElement('start-time-input');
+                if (!startTimeInput) return;
+                
+                const newStartTime = startTimeInput.value;
+                if (!newStartTime) return;
+                
+                systemState.currentStartTime = newStartTime;
+                saveToStorage('start_time', newStartTime);
+                
+                const [startHour, startMinute] = newStartTime.split(':').map(Number);
+                const startTotalMinutes = startHour * 60 + startMinute;
+                const endTotalMinutes = (startTotalMinutes + 840) % (24 * 60);
+                const endHour = Math.floor(endTotalMinutes / 60);
+                const endMinute = endTotalMinutes % 60;
+                systemState.currentEndTime = `${endHour.toString().padStart(2, '0')}:${endMinute.toString().padStart(2, '0')}`;
+                
+                safeUpdateText('schedule-window', `${systemState.currentStartTime} - ${systemState.currentEndTime} (6 doses, 2.8 hour intervals)`);
+                
+                updateScheduleDisplay();
+                showMessage('Schedule updated successfully');
+                
+            } catch (error) {
+                console.error('Error updating start time:', error);
+                showMessage('Failed to update schedule', 'error');
+            }
+        }
+
+        function updateScheduleDisplay() {
+            try {
+                const schedule = generateMedicationSchedule(systemState.currentStartTime);
+                
+                schedule.forEach((med, index) => {
+                    safeUpdateText(`time-${index + 1}`, med.time);
+                });
+                
+                const schedulePanel = safeGetElement('schedule-panel');
+                if (schedulePanel) {
+                    let scheduleHtml = '';
+                    schedule.forEach(med => {
+                        scheduleHtml += `
+                            <div class="schedule-item">
+                                <div>
+                                    <div class="schedule-time">${med.time}</div>
+                                    <div class="schedule-med">${med.medication} ${med.dose}</div>
+                                </div>
+                                <div class="schedule-bay">Bay ${med.bay}</div>
+                            </div>
+                        `;
+                    });
+                    schedulePanel.innerHTML = scheduleHtml;
+                }
+                
+            } catch (error) {
+                console.error('Error updating schedule display:', error);
+                showMessage('Failed to update schedule display', 'error');
+            }
+        }
+
+        // Testing functions
+        function simulateAlert() {
+            try {
+                const testBay = Math.floor(Math.random() * 6) + 1;
+                const bay = safeGetElement(`bay-${testBay}`);
+                const schedule = generateMedicationSchedule(systemState.currentStartTime);
+                const testMedication = schedule[testBay - 1];
+                
+                if (bay && testMedication) {
+                    for (let i = 1; i <= 6; i++) {
+                        const otherBay = safeGetElement(`bay-${i}`);
+                        if (otherBay) {
+                            otherBay.classList.remove('active');
+                        }
+                    }
+                    
+                    bay.classList.add('active');
+                    systemState.testingMode = true;
+                    
+                    safeUpdateText('current-medication', `TEST ALERT: ${testMedication.medication} ${testMedication.dose}`);
+                    safeUpdateText('next-dose', `Bay ${testBay} • Testing Mode - Acknowledgment window will stay open`);
+                    
+                    showAcknowledgmentSection(testMedication);
+                    showMessage(`Test alert activated for Bay ${testBay} - Acknowledgment window will remain open for testing`);
+                }
+                
+            } catch (error) {
+                console.error('Error simulating alert:', error);
+                showMessage('Failed to simulate alert', 'error');
+            }
+        }
+
+        // Metrics management
+        function updateAdherenceMetrics() {
+            try {
+                console.log('Updating adherence metrics, log length:', systemState.medicationLog.length);
+                
+                if (systemState.medicationLog.length === 0) {
+                    console.log('Empty medication log - setting all metrics to zero');
+                    
+                    const metricsToReset = [
+                        { id: 'adherence-rate', value: '0%' },
+                        { id: 'avg-delay', value: '0.0' },
+                        { id: 'streak-count', value: '0' },
+                        { id: 'total-doses', value: '0' }
+                    ];
+                    
+                    metricsToReset.forEach(metric => {
+                        const element = document.getElementById(metric.id);
+                        if (element) {
+                            element.textContent = metric.value;
+                            console.log(`Set ${metric.id} to ${metric.value}`);
+                        }
+                    });
+                    
+                    return;
+                }
+
+                const recentLogs = systemState.medicationLog.slice(-42);
+                const adherenceRate = recentLogs.length > 0 ? 
+                    Math.round((recentLogs.filter(log => Math.abs(log.timeDifference) <= 15).length / recentLogs.length) * 100) : 0;
+                
+                const avgDelay = recentLogs.length > 0 ? 
+                    (recentLogs.reduce((sum, log) => sum + log.timeDifference, 0) / recentLogs.length).toFixed(1) : '0.0';
+
+                const streak = calculateCurrentStreak();
+
+                const adherenceElement = document.getElementById('adherence-rate');
+                const delayElement = document.getElementById('avg-delay');
+                const streakElement = document.getElementById('streak-count');
+                const dosesElement = document.getElementById('total-doses');
+                
+                if (adherenceElement) adherenceElement.textContent = `${adherenceRate}%`;
+                if (delayElement) delayElement.textContent = avgDelay > 0 ? `+${avgDelay}` : `${avgDelay}`;
+                if (streakElement) streakElement.textContent = streak;
+                if (dosesElement) dosesElement.textContent = systemState.medicationLog.length.toLocaleString();
+                
+                console.log('Metrics updated:', { adherenceRate, avgDelay, streak, total: systemState.medicationLog.length });
+                
+            } catch (error) {
+                console.error('Error updating adherence metrics:', error);
+            }
+        }
+
+        function calculateCurrentStreak() {
+            if (systemState.medicationLog.length === 0) return 0;
+            
+            const sortedLogs = systemState.medicationLog.sort((a, b) => new Date(b.date) - new Date(a.date));
+            let streak = 0;
+            
+            for (const log of sortedLogs) {
+                if (Math.abs(log.timeDifference) <= 15) {
+                    streak++;
+                } else {
+                    break;
+                }
+            }
+            
+            return streak;
+        }
+
+        function resetAdherenceMetrics() {
+            if (confirm('Are you sure you want to reset all adherence metrics and medication logs? This will clear all recorded medication history.')) {
+                try {
+                    console.log('Starting adherence metrics reset...');
+                    
+                    systemState.medicationLog = [];
+                    saveToStorage('medication_log', systemState.medicationLog);
+                    console.log('Medication log cleared');
+                    
+                    const metricsToUpdate = [
+                        { id: 'adherence-rate', value: '0%' },
+                        { id: 'avg-delay', value: '0.0' },
+                        { id: 'streak-count', value: '0' },
+                        { id: 'total-doses', value: '0' }
+                    ];
+                    
+                    metricsToUpdate.forEach(metric => {
+                        const element = document.getElementById(metric.id);
+                        if (element) {
+                            element.textContent = metric.value;
+                            element.innerText = metric.value;
+                            element.innerHTML = metric.value;
+                            console.log(`Updated ${metric.id} to ${metric.value}`);
+                        } else {
+                            console.error(`Element ${metric.id} not found`);
+                        }
+                    });
+                    
+                    console.log('Metrics display updated');
+                    
+                    updateMedicationLogDisplay();
+                    updateDataSummary();
+                    updateAdherenceMetrics();
+                    
+                    for (let i = 1; i <= 6; i++) {
+                        const bay = safeGetElement(`bay-${i}`);
+                        if (bay) {
+                            bay.classList.remove('taken');
+                            if (!bay.classList.contains('active')) {
+                                bay.classList.add('loaded');
+                            }
+                        }
+                    }
+                    
+                    console.log('Bay indicators cleared');
+                    showMessage('✅ Adherence metrics and medication history have been reset successfully');
+                    console.log('Reset completed successfully');
+                    
+                } catch (error) {
+                    console.error('Error resetting adherence metrics:', error);
+                    showMessage('❌ Failed to reset metrics: ' + error.message, 'error');
+                }
+            }
+        }
+
+        // Log display
+        function updateMedicationLogDisplay() {
+            try {
+                const logContainer = safeGetElement('medication-log');
+                if (!logContainer) return;
+
+                if (systemState.medicationLog.length === 0) {
+                    logContainer.innerHTML = `
+                        <div style="text-align: center; color: #666; font-style: italic;">
+                            No medications logged yet. Use the Testing tab to simulate medication taking.
+                        </div>
+                    `;
+                    return;
+                }
+
+                let logHtml = '';
+                const recentLogs = systemState.medicationLog.slice(-5).reverse();
+                
+                recentLogs.forEach(log => {
+                    const timingClass = Math.abs(log.timeDifference) <= 5 ? 'on-time' : 
+                                      log.timeDifference > 5 ? 'late' : 'early';
+                    const timingText = log.timeDifference === 0 ? 'On time' :
+                                      log.timeDifference > 0 ? `${log.timeDifference}min late` :
+                                      `${Math.abs(log.timeDifference)}min early`;
+                    
+                    logHtml += `
+                        <div style="border-bottom: 1px solid #f0f0f0; padding: 8px 0; display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <div style="font-weight: 600; color: #1b5e20;">${log.medication} ${log.dose}</div>
+                                <div style="font-size: 0.8rem; color: #666;">Bay ${log.bay} • ${log.actualDateTime}</div>
+                            </div>
+                            <div style="text-align: right;">
+                                <div style="font-size: 0.75rem; color: ${timingClass === 'on-time' ? '#4caf50' : timingClass === 'late' ? '#f44336' : '#ff9800'};">
+                                    ${timingText}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                logContainer.innerHTML = logHtml;
+            } catch (error) {
+                console.error('Error updating medication log display:', error);
+            }
+        }
+
+        // Export functions
+        function exportMedicationData(type = 'detailed') {
+            try {
+                const exportData = {
+                    patient: "Ian Fraser Carwardine",
+                    pharmacy: "McNeil Pharmacy",
+                    exportDate: new Date().toISOString(),
+                    exportType: type,
+                    settings: systemState.systemSettings,
+                    schedule: {
+                        startTime: systemState.currentStartTime,
+                        endTime: systemState.currentEndTime,
+                        medicationFramework: "Stalevo Key Framework"
+                    },
+                    medicationLog: systemState.medicationLog,
+                    adherenceMetrics: {
+                        totalDoses: systemState.medicationLog.length,
+                        adherenceRate: systemState.medicationLog.length > 0 ? 
+                            Math.round((systemState.medicationLog.filter(log => Math.abs(log.timeDifference) <= 15).length / systemState.medicationLog.length) * 100) : 0,
+                        currentStreak: calculateCurrentStreak()
+                    }
+                };
+
+                const dataStr = JSON.stringify(exportData, null, 2);
+                const dataBlob = new Blob([dataStr], { type: 'application/json' });
+                
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(dataBlob);
+                link.download = `pillback_${type}_report_${new Date().toISOString().split('T')[0]}.json`;
+                link.click();
+                
+                showMessage(`${type} report exported successfully`);
+                
+            } catch (error) {
+                console.error('Error exporting medication data:', error);
+                showMessage('Failed to export data', 'error');
+            }
+        }
+
+        function exportSystemBackup() {
+            try {
+                const backupData = {
+                    systemVersion: "PillBack™ Web v1.0",
+                    backupDate: new Date().toISOString(),
+                    patient: "Ian Fraser Carwardine",
+                    completeSystemState: systemState,
+                    scheduleData: generateMedicationSchedule(systemState.currentStartTime)
+                };
+
+                const dataStr = JSON.stringify(backupData, null, 2);
+                const dataBlob = new Blob([dataStr], { type: 'application/json' });
+                
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(dataBlob);
+                link.download = `pillback_backup_${new Date().toISOString().split('T')[0]}.json`;
+                link.click();
+                
+                showMessage('System backup exported successfully');
+                
+            } catch (error) {
+                console.error('Error exporting system backup:', error);
+                showMessage('Failed to export backup', 'error');
+            }
+        }
+
+        function clearStoredData() {
+            if (confirm('Are you sure you want to clear all stored medication data? This action cannot be undone.')) {
+                systemState.medicationLog = [];
+                systemState.currentDueMedication = null;
+                
+                saveToStorage('medication_log', systemState.medicationLog);
+                
+                updateMedicationLogDisplay();
+                updateAdherenceMetrics();
+                updateDataSummary();
+                
+                showMessage('All medication data has been cleared');
+            }
+        }
+
+        function updateDataSummary() {
+            try {
+                const totalLogs = systemState.medicationLog.length;
+                const settingsCount = Object.keys(systemState.systemSettings).length;
+                const lastLog = systemState.medicationLog.length > 0 ? 
+                    systemState.medicationLog[systemState.medicationLog.length - 1].actualDateTime : 'No records';
+                
+                safeUpdateText('data-summary', 
+                    `${totalLogs.toLocaleString()} medication records • ` +
+                    `${settingsCount} saved settings • ` +
+                    `Last entry: ${lastLog}`
+                );
+            } catch (error) {
+                console.error('Error updating data summary:', error);
+            }
+        }
+
+        // System initialization
+        function initializeSystem() {
+            try {
+                console.log('Initializing PillBack™ Web System...');
+                
+                // Load saved data from localStorage
+                const savedStartTime = loadFromStorage('start_time', '08:00');
+                const savedSettings = loadFromStorage('settings', {
+                    soundAlerts: true,
+                    advanceWarnings: true,
+                    missedAlerts: false
+                });
+                
+                systemState.currentStartTime = savedStartTime;
+                systemState.systemSettings = savedSettings;
+                
+                // Apply loaded settings to UI
+                const startTimeInput = safeGetElement('start-time-input');
+                if (startTimeInput) {
+                    startTimeInput.value = savedStartTime;
+                    startTimeInput.addEventListener('change', updateStartTime);
+                }
+                
+                const soundAlerts = safeGetElement('sound-alerts');
+                const advanceWarnings = safeGetElement('advance-warnings');
+                const missedAlerts = safeGetElement('missed-alerts');
+                
+                if (soundAlerts) soundAlerts.checked = savedSettings.soundAlerts;
+                if (advanceWarnings) advanceWarnings.checked = savedSettings.advanceWarnings;
+                if (missedAlerts) missedAlerts.checked = savedSettings.missedAlerts;
+                
+                // Set up connection monitoring
+                window.addEventListener('online', updateConnectionStatus);
+                window.addEventListener('offline', updateConnectionStatus);
+                updateConnectionStatus();
+                
+                // Initialize displays
+                updateScheduleDisplay();
+                updateMedicationLogDisplay();
+                updateAdherenceMetrics();
+                updateDataSummary();
+                
+                // Start clock with error handling
+                updateClock();
+                setInterval(() => {
+                    try {
+                        updateClock();
+                    } catch (error) {
+                        console.error('Clock update error:', error);
+                    }
+                }, 1000);
+                
+                // Update system status
+                safeUpdateText('current-medication', 'System initialized successfully');
+                safeUpdateText('next-dose', 'Monitoring for medication alerts');
+                
+                systemState.isInitialized = true;
+                showMessage('PillBack™ Web System ready - Fully compatible with iPhone');
+                
+                console.log('Web system initialization complete');
+                
+                // Add web app manifest support
+                if ('serviceWorker' in navigator) {
+                    console.log('Service Worker support detected - could add offline capability');
+                }
+                
+            } catch (error) {
+                console.error('System initialization failed:', error);
+                showMessage('System initialization failed - please refresh page', 'error');
+            }
+        }
+
+        // Enhanced error handling for web environment
+        window.addEventListener('error', function(event) {
+            console.error('Global error caught:', event.error);
+            showMessage('An error occurred - system may have limited functionality', 'error');
+        });
+
+        window.addEventListener('unhandledrejection', function(event) {
+            console.error('Unhandled promise rejection:', event.reason);
+            showMessage('Network error - some features may be limited', 'error');
+        });
+
+        // iOS-specific optimizations
+        if (/iPad|iPhone|iPod/.test(navigator.userAgent)) {
+            console.log('iOS device detected - applying optimizations');
+            
+            // Prevent zoom on input focus
+            document.addEventListener('touchstart', function() {}, {passive: true});
+            
+            // Optimize for iOS Safari
+            document.addEventListener('selectionchange', function() {
+                if (document.activeElement.tagName === 'INPUT') {
+                    window.scrollTo(0, 0);
+                }
+            });
+        }
+
+        // Initialize when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initializeSystem);
+        } else {
+            initializeSystem();
+        }
+
+        // Auto-save settings when changed
+        document.addEventListener('change', function(event) {
+            if (event.target.type === 'checkbox' && event.target.id.includes('alerts')) {
+                const newSettings = {
+                    soundAlerts: safeGetElement('sound-alerts')?.checked || false,
+                    advanceWarnings: safeGetElement('advance-warnings')?.checked || false,
+                    missedAlerts: safeGetElement('missed-alerts')?.checked || false
+                };
+                systemState.systemSettings = newSettings;
+                saveToStorage('settings', newSettings);
+                showMessage('Settings saved automatically');
+            }
+        });
+
+        console.log('PillBack™ Web System loaded - Ready for iPhone use');
+    </script>
+</body>
+</html>
